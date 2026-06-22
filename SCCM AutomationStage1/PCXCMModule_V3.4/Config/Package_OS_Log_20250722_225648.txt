@@ -1,0 +1,28 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20250722225648
+Username: MPHASIS\cya.harshith
+RunAs User: MPHASIS\cya.harshith
+Machine: SRVBAN19CASVM01 (Microsoft Windows NT 10.0.14393.0)
+Host Application: C:\WINDOWS\system32\WindowsPowerShell\v1.0\PowerShell_ISE.exe
+Process ID: 10652
+PSVersion: 5.1.14393.8146
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.14393.8146
+BuildVersion: 10.0.14393.8146
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is F:\Development\PCXCMModule\Config\Package_OS_Log_20250722_225648.txt
+Processing packages from: F:\Development\PCXCMModule\Config\Package_List.csv
+Using config: F:\Development\PCXCMModule\Config\Config.xml
+Output Report: F:\Development\PCXCMModule\Config\Package_OS_Report_20250722_225648.csv
+
+Updated program: B
+Updated program: reboot
+**********************
+Windows PowerShell transcript end
+End time: 20250722225656
+**********************

@@ -1,0 +1,106 @@
+﻿function New-PCXCMCollectionInFolder {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CollectionName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LimitingCollection,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FolderPath,
+
+        [switch]$AutoCreateFolder
+    )
+
+    # Remove trailing backslash if any
+    $FolderPath = $FolderPath.TrimEnd('\')
+
+    if ($AutoCreateFolder) {
+        $segments = $FolderPath -split '\\'
+        $parentPath = ($segments[0..($segments.Length - 2)] -join '\')
+        $folderName = $segments[-1]
+
+        $created = New-PCXCMFolder -Path $parentPath -Name $folderName -AutoCreatePath
+        if (-not $created) {
+            Write-Host "Failed to create folder path '$FolderPath'. Aborting collection creation." -ForegroundColor $ColError
+            return
+        }
+    }
+
+    # Check if the collection already exists
+    $existingCollection = Get-CMDeviceCollection -Name $CollectionName
+    if (-not $existingCollection) {
+        New-CMDeviceCollection -Name $CollectionName -LimitingCollectionName $LimitingCollection > $null
+        Write-Host "Collection '$CollectionName' with limiting '$LimitingCollection' created successfully." -ForegroundColor $ColSuccess
+    } else {
+        Write-Host "Collection '$CollectionName' already exists." -ForegroundColor $ColInform
+    }
+
+    # Move the collection to the specified folder
+    $collectionObject = Get-CMDeviceCollection -Name $CollectionName
+    #$siteFolderPath = "$SiteCode:\$FolderPath"
+    $siteFolderPath = "$siteCode" + ":\$FolderPath"
+    Move-CMObject -FolderPath $siteFolderPath -InputObject $collectionObject
+    Write-Host "Collection '$CollectionName' moved to '$siteFolderPath'." -ForegroundColor $ColSuccess
+}
+
+# SIG # Begin signature block
+# MIIKmwYJKoZIhvcNAQcCoIIKjDCCCogCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUEXMBBXPSTDx71NLJsTtzRH0
+# QrCgggfxMIIH7TCCBdWgAwIBAgITfgAqDS38gi3RBcr9PwAAACoNLTANBgkqhkiG
+# 9w0BAQsFADBcMRMwEQYKCZImiZPyLGQBGRYDY29tMRcwFQYKCZImiZPyLGQBGRYH
+# bXBoYXNpczEUMBIGCgmSJomT8ixkARkWBGNvcnAxFjAUBgNVBAMTDU1waGFzaXNS
+# b290Q0EwHhcNMjUwMTI3MTIxNTE1WhcNMjcwMTI3MTIxNTE1WjCBuTETMBEGCgmS
+# JomT8ixkARkWA2NvbTEXMBUGCgmSJomT8ixkARkWB21waGFzaXMxFDASBgoJkiaJ
+# k/IsZAEZFgRjb3JwMR0wGwYDVQQLExRNcGhhc2lTIEJQTyBTZXJ2aWNlczESMBAG
+# A1UECxMJTWFuZ2Fsb3JlMRQwEgYDVQQLEwtNb3JnYW4gR2F0ZTESMBAGA1UECxMJ
+# QWxsIFVzZXJzMRYwFAYDVQQDEw1IYXJzaGl0aHJhaiBQMIIBIjANBgkqhkiG9w0B
+# AQEFAAOCAQ8AMIIBCgKCAQEAxMQa6w0z2RxDuXsD42TVI+y6pNJGSfctL3Wo7FlZ
+# 13PDFGwzrJ+MHYrHdXbTDXx9QNwRmp1XEACLBzXvtfkTvptoJXm8S5an710FmIhQ
+# X1UaRtMBmxcPHPXYx9srPo/IrspfzjjfzIcA3iyV/kPp/BHc5TAUTwtkaUVDOfsr
+# Eo+f0AkJTZY3+4U39rvVSh3Tymo8yett0lFMG+Mo8XoGxXhjmcDYr4WgdPnmRUf7
+# 2NprzPYTAr9+CgiAMMlI2oEFVhevReXiYWI8NeBlnDxHF3Wz8vapN82qO/AyCvsu
+# 9A8HWsFdKynYlgmqjcEFeq5LTDkqBG40M+mwUwlmrkfdHQIDAQABo4IDSDCCA0Qw
+# OwYJKwYBBAGCNxUHBC4wLAYkKwYBBAGCNxUIhMyCH8+9G4LVjRuzxzWGhuksgUCG
+# mfcDrJoTAgFkAgEOMBMGA1UdJQQMMAoGCCsGAQUFBwMDMAsGA1UdDwQEAwIHgDAb
+# BgkrBgEEAYI3FQoEDjAMMAoGCCsGAQUFBwMDMFIGCSsGAQQBgjcZAgRFMEOgQQYK
+# KwYBBAGCNxkCAaAzBDFTLTEtNS0yMS0xMDc5NTc2NTIzLTM4NTgxMjM1NjUtMTkw
+# OTY3OTkxNS05NTg5MDQyME8GA1UdEQRIMEagKQYKKwYBBAGCNxQCA6AbDBlIYXJz
+# aGl0aHJhai5QQG1waGFzaXMuY29tgRlIYXJzaGl0aHJhai5QQG1waGFzaXMuY29t
+# MB0GA1UdDgQWBBSkZDx6EbPefW2Ud8IXKJ6tZ3dLPzAfBgNVHSMEGDAWgBQjRSRz
+# 1j1XGGn4I9WpMcdUqHHtjTCB2wYDVR0fBIHTMIHQMIHNoIHKoIHHhoHEbGRhcDov
+# Ly9DTj1NcGhhc2lzUm9vdENBLENOPVNSVkJBTjA5Q1JBVVZNMSxDTj1DRFAsQ049
+# UHVibGljJTIwS2V5JTIwU2VydmljZXMsQ049U2VydmljZXMsQ049Q29uZmlndXJh
+# dGlvbixEQz1jb3JwLERDPW1waGFzaXMsREM9Y29tP2NlcnRpZmljYXRlUmV2b2Nh
+# dGlvbkxpc3Q/YmFzZT9vYmplY3RDbGFzcz1jUkxEaXN0cmlidXRpb25Qb2ludDCC
+# AQEGCCsGAQUFBwEBBIH0MIHxMIG0BggrBgEFBQcwAoaBp2xkYXA6Ly8vQ049TXBo
+# YXNpc1Jvb3RDQSxDTj1BSUEsQ049UHVibGljJTIwS2V5JTIwU2VydmljZXMsQ049
+# U2VydmljZXMsQ049Q29uZmlndXJhdGlvbixEQz1jb3JwLERDPW1waGFzaXMsREM9
+# Y29tP2NBQ2VydGlmaWNhdGU/YmFzZT9vYmplY3RDbGFzcz1jZXJ0aWZpY2F0aW9u
+# QXV0aG9yaXR5MDgGCCsGAQUFBzABhixodHRwOi8vU1JWQkFOMDlDUkFVVk0xLmNv
+# cnAubXBoYXNpcy5jb20vb2NzcDANBgkqhkiG9w0BAQsFAAOCAgEAK86w/bs3xZR1
+# wCj+aHRSPYtMjPWaBV1x7FYIRUI4cYUWh8/LSXd+SeecR9ZILHv98WmpHHSCANMm
+# AjmLx0GufMz1IS+CuWrMmbtWA81zlYICoCMC8sNGoOHAm16njFwm09Yj0/7lB5OA
+# UMbPdy1FoL7FTrOTgnWElBxbZZd4DyEKfC4f+f+6L7cIrFgXiansLLiYy8mTHNUW
+# /T4ZipxPYMdcKXkItY94NCsQzccy12xDI8JCd2PFk5p8IVE85yUxP7xT9jc7ZSKg
+# AGOuwJ9PDWAFMXQe8DmYyVCrrw0oVn0t7OWcmBsjId8kUjm1kq+lUcMyx+xwhO6q
+# 8DbgqFekH6KLJA/fKsSGgxInpqvJzQ9ExTpAuxATrdTZkrlfkIEArqp1DPBMBF7+
+# 2pewhdwF3PWqd1zRI1Phmo6lm4ixUST0sVRygV+PT5KuDWVCnrkD39rGn2XcZ5Tk
+# /+0eezAMjG4xnXmwja7pu3h0jcDwt7RQoLKKMHc70pFiyKGr5lY5/jWLClFLh3RV
+# 7Z/2zKRTRf8NL/uiiS6z9Qv7vuZZ+IqrzB4XxPdCytpKZwoy4vSxBFob6syDLc2r
+# FaTctXl3Yg27zp4NYG0+CP+y6fsGw2V6g4zz50wp1SAmWkLL7WK2e3gDzbdUrXq2
+# WD+POBA6s8795fJpOk+tkFSY8SENWR0xggIUMIICEAIBATBzMFwxEzARBgoJkiaJ
+# k/IsZAEZFgNjb20xFzAVBgoJkiaJk/IsZAEZFgdtcGhhc2lzMRQwEgYKCZImiZPy
+# LGQBGRYEY29ycDEWMBQGA1UEAxMNTXBoYXNpc1Jvb3RDQQITfgAqDS38gi3RBcr9
+# PwAAACoNLTAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZ
+# BgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYB
+# BAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU3hKubSzp6hCQV0O0CvrUGmz1qgIwDQYJ
+# KoZIhvcNAQEBBQAEggEAdzoBk3TpWlzXjHqqJhNUY05coSfUxGM1T4PqVaEKzVUs
+# MYjRWQk1a1IbIqjkTIl5TiBrYF6zhF4Wsw9zBN8jysnaWwjljLfCzNcCW6oa22OG
+# CzBPfUe1PJ4w6VzIU0ok8p/q4Eg3nAaeS02Sco+6OO6g2u20cnLKSW/Fke9MA9mr
+# 6OtjsVh0JrKqnopYEYtR2XNcu98EikQJ5U/bDtAaP/otHS0Ny5tx29jy11tmQ2Vu
+# IjOoe8zw1torrcQr8V5Wv5lks6ICyccmzEs16zsC09ZLALwZu88ilYTo4iuuY6+O
+# g9jFlCfTRajO08FAA0TZipxEXNmziqVWGxCvrHNoYw==
+# SIG # End signature block
